@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woologic - L'Île des Mathématiques</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            margin: 0;
+            padding: 0;
+            background-image: url('Rose.png'); /* Background from your image */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #FFD700;
+            font-size: 3.5em;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .code-editor-section {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 20px;
+        }
+
+        .bloc-palette {
+            flex: 1;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .bloc {
+            background-color: #6c5ce7;
+            color: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            cursor: grab;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .bloc:hover {
+            background-color: #9370db;
+            transform: scale(1.05);
+        }
+
+        .main-code-area {
+            flex: 2;
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            min-height: 300px;
+        }
+
+        #game-area {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            background-image: url('/static/image.png'); /* 🔥 Custom image background */
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .character {
+            width: 40px;
+            height: 40px;
+            background-color: #007bff;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            color: white;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.8);
+            z-index: 10;
+        }
+
+        .target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            font-size: 1.5em;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.8);
+            z-index: 5;
+        }
+
+        #code-area {
+            min-height: 100px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            line-height: 1.8;
+        }
+
+        .instruction {
+            color: #fff;
+            font-style: italic;
+            margin: 0;
+        }
+
+        .controls-section {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .calculator-section {
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .calculator-section p {
+            margin: 5px 0;
+            color: #fff;
+        }
+
+        #level-display {
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+
+        #coordinate-display {
+            font-size: 1.1em;
+            color: #00eaff;
+        }
+
+        #goal-display {
+            margin-top: 10px;
+            font-style: italic;
+            color: #ff6b6b;
+        }
+
+        button#run-btn {
+            background-color: #007bff;
+            color: white;
+            font-size: 1.3em;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.5);
+        }
+
+        button#run-btn:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            font-size: 0.9em;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .in-code-area {
+            background-color: #4CAF50;
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .in-code-area:hover {
+            background-color: #388E3C;
+        }
+
+        /* Stars Animation */
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 3s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            100% { opacity: 1; }
+        }
+
+        /* Custom Message Panel */
+        .message-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            max-width: 600px;
+            text-align: center;
+            font-family: 'Comic Sans MS', cursive;
+            font-size: 1.2em;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+
+        .message-panel.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-panel.success {
+            background-color: #28a745;
+            border: 2px solid #218838;
+        }
+
+        .message-panel.error {
+            background-color: #dc3545;
+            border: 2px solid #c82333;
+        }
+
+        .message-panel.info {
+            background-color: #17a2b8;
+            border: 2px solid #138496;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>✨ Woologic ✨</h1>
+    </header>
+
+    <main>
+        <section class="code-editor-section">
+            <aside class="bloc-palette">
+                <h2 style="color: #ffd700;">Blocs de Code 🧩</h2>
+                <div class="bloc" data-action="right" draggable="true">➡️ Droite (h+1)</div>
+                <div class="bloc" data-action="left" draggable="true">⬅️ Gauche (h-1)</div>
+                <div class="bloc" data-action="up" draggable="true">⬆️ Haut (v-1)</div>
+                <div class="bloc" data-action="down" draggable="true">⬇️ Bas (v+1)</div>
+            </aside>
+            <div class="main-code-area">
+                <div id="game-area">
+                    <div id="character" class="character">🧙</div>
+                    <div id="target" class="target">🎯</div>
+                </div>
+                <div id="code-area">
+                    <p class="instruction">Glisse les blocs ici pour programmer ton personnage !</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="controls-section">
+            <div class="calculator-section">
+                <div id="level-display">
+                    <p>Niveau : <span id="level-text">1</span></p>
+                    <p>Objectif : Aller de <span id="start-coords"></span> à <span id="end-coords"></span></p>
+                </div>
+                <div id="coordinate-display">
+                    <p>Position (h, v) : <span id="current-coords">(0, 0)</span></p>
+                </div>
+                <div id="goal-display">
+                    <p id="goal-text">Connecté à l'IA...</p>
+                </div>
+            </div>
+            <button id="run-btn">Lancer le programme 🚀</button>
+        </section>
+    </main>
+
+    <!-- Custom Message Panel -->
+    <div id="message-panel" class="message-panel">
+        <div id="message-content"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Woo | L'Île des Mathématiques Magiques</p>
+    </footer>
+
+    <!-- Add Twinkling Stars -->
+    <script>
+        const starContainer = document.createElement('div');
+        starContainer.style.position = 'fixed';
+        starContainer.style.top = '0';
+        starContainer.style.left = '0';
+        starContainer.style.width = '100%';
+        starContainer.style.height = '100%';
+        starContainer.style.pointerEvents = 'none';
+        starContainer.style.zIndex = '0';
+        document.body.appendChild(starContainer);
+
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.width = `${Math.random() * 3 + 1}px`;
+            star.style.height = star.style.width;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 3}s`;
+            starContainer.appendChild(star);
+        }
+    </script>
+
+    <!-- Main Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const blocPalette = document.querySelector('.bloc-palette');
+            const codeArea = document.getElementById('code-area');
+            const character = document.getElementById('character');
+            const runBtn = document.getElementById('run-btn');
+            const startCoordsSpan = document.getElementById('start-coords');
+            const endCoordsSpan = document.getElementById('end-coords');
+            const currentCoordsSpan = document.getElementById('current-coords');
+            const levelTextSpan = document.getElementById('level-text');
+            const goalText = document.getElementById('goal-text');
+            const target = document.getElementById('target');
+            const messagePanel = document.getElementById('message-panel');
+            const messageContent = document.getElementById('message-content');
+
+            let currentLevel = 0;
+            const levels = [
+                { start: { h: 0, v: 0 }, end: { h: 2, v: 2 } },
+                { start: { h: 0, v: 0 }, end: { h: 3, v: 1 } },
+                { start: { h: 2, v: 0 }, end: { h: 0, v: 3 } },
+                { start: { h: 0, v: 3 }, end: { h: 4, v: 1 } },
+                { start: { h: 0, v: 0 }, end: { h: 5, v: 5 } }
+            ];
+
+            let characterPosition = { h: 0, v: 0 };
+            let draggedBloc = null;
+            let ws;
+            let turn = 'player';
+
+            // ✅ Custom Message Function (replaces alert)
+            function showMessage(message, type = 'info') {
+                messageContent.textContent = message;
+                messagePanel.className = 'message-panel ' + type;
+                messagePanel.classList.add('show');
+
+                setTimeout(() => {
+                    messagePanel.classList.remove('show');
+                }, 3000);
+            }
+
+            function connectWebSocket() {
+                if (ws && ws.readyState === WebSocket.OPEN) return;
+                ws = new WebSocket("ws://127.0.0.1:8000/ws");
+
+                ws.onopen = () => {
+                    console.log("WebSocket connected.");
+                    goalText.textContent = "IA connectée. Votre tour de jouer !";
+                    initLevel(0);
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.goal) {
+                        goalText.textContent = `Objectif de l'IA : ${data.goal}`;
+                    } else if (data.error) {
+                        goalText.textContent = `Erreur de l'IA : ${data.error}`;
+                        console.error("AI Goal Error:", data.error);
+                    } else if (data.aiPath) {
+                        runAIMove(data.aiPath);
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.log("WebSocket déconnectée. Tentative de reconnexion...");
+                    setTimeout(connectWebSocket, 1000);
+                };
+
+                ws.onerror = (error) => {
+                    console.error("Erreur WebSocket:", error);
+                };
+            }
+
+            function initLevel(levelIndex) {
+                if (levelIndex >= levels.length) {
+                    showMessage("🎉 Félicitations ! Vous avez terminé tous les niveaux !", 'success');
+                    return;
+                }
+
+                currentLevel = levelIndex;
+                const level = levels[currentLevel];
+                characterPosition = { h: level.start.h, v: level.start.v };
+
+                levelTextSpan.textContent = currentLevel + 1;
+                startCoordsSpan.textContent = `(${level.start.h}, ${level.start.v})`;
+                endCoordsSpan.textContent = `(${level.end.h}, ${level.end.v})`;
+
+                updateCharacterPosition();
+                updateTargetPosition();
+
+                codeArea.innerHTML = '<p class="instruction">Glisse les blocs ici pour programmer ton personnage !</p>';
+                turn = 'player';
+                goalText.textContent = "C'est votre tour de jouer !";
+            }
+
+            function updateCharacterPosition() {
+                const hStep = 50;
+                const vStep = 50;
+                character.style.left = `${characterPosition.h * hStep}px`;
+                character.style.top = `${characterPosition.v * vStep}px`;
+                currentCoordsSpan.textContent = `(${characterPosition.h}, ${characterPosition.v})`;
+            }
+
+            function updateTargetPosition() {
+                const hStep = 50;
+                const vStep = 50;
+                target.style.left = `${levels[currentLevel].end.h * hStep}px`;
+                target.style.top = `${levels[currentLevel].end.v * vStep}px`;
+            }
+
+            // Drag & Drop
+            blocPalette.addEventListener('dragstart', (e) => {
+                if (turn === 'ai') return;
+                if (e.target.classList.contains('bloc')) {
+                    draggedBloc = e.target;
+                    e.dataTransfer.setData('text/plain', e.target.dataset.action);
+                }
+            });
+
+            codeArea.addEventListener('dragover', (e) => e.preventDefault());
+
+            codeArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (turn === 'ai') return;
+                if (draggedBloc && e.target.closest('#code-area')) {
+                    const newBloc = draggedBloc.cloneNode(true);
+                    newBloc.draggable = false;
+                    newBloc.classList.add('in-code-area');
+                    codeArea.appendChild(newBloc);
+                    draggedBloc = null;
+
+                    newBloc.addEventListener('click', () => {
+                        newBloc.remove();
+                    });
+                }
+            });
+
+            // Run Button
+            runBtn.addEventListener('click', async () => {
+                if (turn === 'ai') {
+                    showMessage("⏳ Ce n'est pas votre tour !", 'info');
+                    return;
+                }
+
+                const blocks = Array.from(codeArea.querySelectorAll('.bloc.in-code-area'));
+                const initialPosition = { ...characterPosition };
+
+                for (const bloc of blocks) {
+                    const action = bloc.dataset.action;
+                    bloc.style.backgroundColor = '#FFD700';
+
+                    switch (action) {
+                        case 'right': characterPosition.h += 1; break;
+                        case 'left': characterPosition.h -= 1; break;
+                        case 'up': characterPosition.v -= 1; break;
+                        case 'down': characterPosition.v += 1; break;
+                    }
+                    updateCharacterPosition();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    bloc.style.backgroundColor = '';
+                }
+
+                checkVictory(initialPosition);
+            });
+
+            function checkVictory(initialPosition) {
+                const currentGoal = levels[currentLevel].end;
+                if (characterPosition.h === currentGoal.h && characterPosition.v === currentGoal.v) {
+                    showMessage(`🎉 Félicitations ! Vous avez atteint la cible du niveau ${currentLevel + 1} !`, 'success');
+                    initLevel(currentLevel + 1);
+                } else {
+                    showMessage("⚠️ Dommage ! Le programme est incomplet. Retour au point de départ.", 'error');
+                    characterPosition = initialPosition;
+                    updateCharacterPosition();
+
+                    turn = 'ai';
+                    goalText.textContent = "C'est au tour de l'IA de jouer...";
+
+                    const level = levels[currentLevel];
+                    ws.send(JSON.stringify({
+                        turn: 'ai',
+                        playerPos: initialPosition,
+                        targetPos: level.end
+                    }));
+                }
+            }
+
+            async function runAIMove(aiPath) {
+                console.log("AI is playing: ", aiPath);
+                codeArea.innerHTML = '';
+
+                for (const move of aiPath) {
+                    const blocInPalette = document.querySelector(`.bloc[data-action="${move}"]`);
+                    if (blocInPalette) {
+                        const newBloc = blocInPalette.cloneNode(true);
+                        newBloc.draggable = false;
+                        newBloc.classList.add('in-code-area');
+                        codeArea.appendChild(newBloc);
+                    }
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                const blocksToExecute = Array.from(codeArea.querySelectorAll('.bloc.in-code-area'));
+                for (const bloc of blocksToExecute) {
+                    const action = bloc.dataset.action;
+                    bloc.style.backgroundColor = '#FFD700';
+
+                    switch (action) {
+                        case 'right': characterPosition.h += 1; break;
+                        case 'left': characterPosition.h -= 1; break;
+                        case 'up': characterPosition.v -= 1; break;
+                        case 'down': characterPosition.v += 1; break;
+                    }
+                    updateCharacterPosition();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    bloc.style.backgroundColor = '';
+                }
+
+                const currentGoal = levels[currentLevel].end;
+                if (characterPosition.h === currentGoal.h && characterPosition.v === currentGoal.v) {
+                    showMessage("🤖 L'IA a réussi ! À vous de jouer le prochain niveau.", 'success');
+                    initLevel(currentLevel + 1);
+                } else {
+                    showMessage("🤖 L'IA a échoué. Retour à la case départ, c'est votre tour de jouer !", 'error');
+                    initLevel(currentLevel);
+                }
+                turn = 'player';
+                goalText.textContent = "C'est votre tour de jouer !";
+            }
+
+            initLevel(0);
+            connectWebSocket();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Appli de Dessin</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .toolbar {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            margin-right: 10px;
+        }
+
+        .color-swatch {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-swatch:hover, .color-swatch.active {
+            border-color: #007bff;
+        }
+
+        #drawing-canvas {
+            border: 1px solid #ccc;
+            cursor: crosshair;
+            background-color: white;
+        }
+
+        .tool-button, .tool-group button {
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            color: #333; /* Couleur par défaut des icônes */
+        }
+
+        .tool-button:hover, .tool-group button:hover {
+            transform: scale(1.1);
+        }
+
+        .tool-button.active, .tool-group button.active {
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        .tool-group {
+            display: flex;
+            gap: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mon Appli de Dessin Avancée</h1>
+        <div class="toolbar">
+            <button id="undo-button" class="tool-button" title="Annuler">
+                &larr;
+            </button>
+            <button id="redo-button" class="tool-button" title="Rétablir">
+                &rarr;
+            </button>
+            
+            <div class="color-palette">
+                <div class="color-swatch" style="background-color: #000000;" data-color="#000000"></div>
+                <div class="color-swatch" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                <div class="color-swatch" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                <div class="color-swatch" style="background-color: #007bff;" data-color="#007bff"></div>
+                <div class="color-swatch" style="background-color: #28a745;" data-color="#28a745"></div>
+                <div class="color-swatch" style="background-color: #ffc107;" data-color="#ffc107"></div>
+                <div class="color-swatch" style="background-color: #6f42c1;" data-color="#6f42c1"></div>
+                <div class="color-swatch" style="background-color: #17a2b8;" data-color="#17a2b8"></div>
+                <div class="color-swatch" style="background-color: #fd7e14;" data-color="#fd7e14"></div>
+                <div class="color-swatch" style="background-color: #e83e8c;" data-color="#e83e8c"></div>
+                <div class="color-swatch" style="background-color: #6c757d;" data-color="#6c757d"></div>
+                <div class="color-swatch" style="background-color: #343a40;" data-color="#343a40"></div>
+            </div>
+            
+            <input type="color" id="color-picker" value="#000000">
+
+            <label for="size-slider">Taille:</label>
+            <input type="range" id="size-slider" min="1" max="50" value="5">
+            <span id="size-display">5</span>
+
+            <button id="erase-button" class="tool-button" data-type="eraser" title="Gomme">
+                <img src="1.png" style="width: 25px;">
+            </button>
+            <div class="tool-group">
+                <button class="tool-button active" data-type="normal" title="Pinceau normal">
+                    <img src="2.png" style="width: 25px;">        
+                </button>
+                <button class="tool-button" data-type="airbrush" title="Aérographe">
+                    <img src="3.png" style="width: 25px;">
+                </button>
+                <button class="tool-button" data-type="chalk" title="Craie">
+                    <img src="4.png" style="width: 25px;" alt="">    
+                </button>
+                <button class="tool-button" data-type="blur" title="Flou">
+                    <img src="5.png" style="width: 34px;" alt="">    
+                </button>
+                <button class="tool-button" data-type="dotted" title="Ligne pointillée">
+                    <img src="6.png" style="width: 35px;" alt="">
+                </button>
+            </div>
+            <button id="clear-button">Réinitialiser</button>
+        </div>
+        
+        <canvas id="drawing-canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('color-picker');
+        const sizeSlider = document.getElementById('size-slider');
+        const sizeDisplay = document.getElementById('size-display');
+        const clearButton = document.getElementById('clear-button');
+        const eraseButton = document.getElementById('erase-button');
+        const toolButtons = document.querySelectorAll('.tool-button');
+        const colorPalette = document.querySelector('.color-palette');
+
+        // Nouveaux éléments pour l'historique
+        const undoButton = document.getElementById('undo-button');
+        const redoButton = document.getElementById('redo-button');
+        
+        canvas.width = 800;
+        canvas.height = 500;
+        
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let isErasing = false;
+        let penSize = sizeSlider.value;
+        let eraseSize = 20;
+        let currentBrush = 'normal';
+
+        // Historique
+        const history = [];
+        let historyIndex = -1;
+        
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        // Fonction pour sauvegarder l'état du canevas
+        function saveState() {
+            // Efface tous les états futurs après l'état actuel
+            if (historyIndex < history.length - 1) {
+                history.splice(historyIndex + 1);
+            }
+            // Limite la taille de l'historique pour ne pas saturer la mémoire
+            if (history.length >= 20) {
+                history.shift();
+            }
+            history.push(canvas.toDataURL());
+            historyIndex = history.length - 1;
+        }
+
+        // Fonction pour restaurer l'état du canevas
+        function restoreState() {
+            const img = new Image();
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = history[historyIndex];
+        }
+
+        function setTool(toolType) {
+            isErasing = toolType === 'eraser';
+            if (toolType !== 'eraser') {
+                currentBrush = toolType;
+            }
+
+            // Mettre à jour les classes pour l'état actif
+            toolButtons.forEach(btn => btn.classList.remove('active'));
+            if (isErasing) {
+                eraseButton.classList.add('active');
+                sizeSlider.value = eraseSize;
+            } else {
+                document.querySelector(`[data-type="${currentBrush}"]`).classList.add('active');
+                sizeSlider.value = penSize;
+            }
+            sizeDisplay.textContent = sizeSlider.value;
+        }
+
+        const brushFunctions = {
+            normal: (x1, y1, x2, y2, color, size) => {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            },
+            airbrush: (x1, y1, x2, y2, color, size) => {
+                const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const steps = Math.ceil(distance / 5);
+                for (let i = 0; i <= steps; i++) {
+                    const x = x1 + (x2 - x1) * (i / steps);
+                    const y = y1 + (y2 - y1) * (i / steps);
+                    const radius = Math.random() * size / 2 + size / 4;
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = 0.05;
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            },
+            chalk: (x1, y1, x2, y2, color, size) => {
+                const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const steps = Math.ceil(distance / 5);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.lineCap = 'square';
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                for (let i = 0; i < distance * 2; i++) {
+                    const x = x1 + (x2 - x1) * (i / (distance * 2)) + Math.random() * 5 - 2.5;
+                    const y = y1 + (y2 - y1) * (i / (distance * 2)) + Math.random() * 5 - 2.5;
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillRect(x, y, 1, 1);
+                    ctx.globalAlpha = 1;
+                }
+            },
+            blur: (x1, y1, x2, y2, color, size) => {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.globalAlpha = 0.05;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            },
+            dotted: (x1, y1, x2, y2, color, size) => {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.lineCap = 'round';
+                ctx.setLineDash([size, size * 2]);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        };
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const color = isErasing ? '#ffffff' : colorPicker.value;
+            const size = isErasing ? eraseSize : penSize;
+
+            brushFunctions[currentBrush](lastX, lastY, e.offsetX, e.offsetY, color, size);
+
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+        
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+            // Sauvegarde de l'état avant le début du trait
+            saveState();
+        });
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', () => {
+            if (isDrawing) {
+                isDrawing = false;
+                // Sauvegarde de l'état après la fin du trait
+                saveState();
+            }
+        });
+        canvas.addEventListener('mouseout', () => {
+            if (isDrawing) {
+                isDrawing = false;
+                // Sauvegarde de l'état si le trait sort du canevas
+                saveState();
+            }
+        });
+
+        colorPicker.addEventListener('input', (e) => {
+            if (!isErasing) {
+                ctx.strokeStyle = e.target.value;
+            }
+        });
+
+        sizeSlider.addEventListener('input', (e) => {
+            const newSize = e.target.value;
+            if (isErasing) {
+                eraseSize = newSize;
+            } else {
+                penSize = newSize;
+            }
+            sizeDisplay.textContent = newSize;
+            ctx.lineWidth = newSize;
+        });
+        
+        colorPalette.addEventListener('click', (e) => {
+            if (e.target.classList.contains('color-swatch')) {
+                const newColor = e.target.dataset.color;
+                colorPicker.value = newColor;
+                if (!isErasing) {
+                    ctx.strokeStyle = newColor;
+                }
+            }
+        });
+        
+        clearButton.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            saveState(); // Sauvegarder l'état vide
+        });
+
+        undoButton.addEventListener('click', () => {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreState();
+            }
+        });
+
+        redoButton.addEventListener('click', () => {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                restoreState();
+            }
+        });
+
+        toolButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const toolType = e.currentTarget.dataset.type;
+                setTool(toolType);
+            });
+        });
+
+        // Initialisation de l'outil par défaut
+        setTool('normal');
+        saveState();
+    </script>
+</body>
+</html>

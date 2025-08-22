@@ -1,0 +1,27 @@
+# Backend Web & API
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+starlette>=0.36.0
+
+# Securite et authentification
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+bcrypt>=4.0.0
+
+# Base de donnees
+# sqlite3 est inclus dans Python standard
+
+# API externes
+google-api-python-client>=2.100.0
+openai>=1.30.0
+aiosmtplib>=3.1.0
+jinja2>=3.1.0
+
+# Traitement multimedia (optionnel)
+opencv-python>=4.9.0.80
+mss>=7.0.1
+numpy>=1.24.0
+
+# Developpement et outils
+python-dotenv>=1.0.0
+loguru>=0.7.0

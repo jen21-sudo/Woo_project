@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur d'idées AI</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f9; color: #333; }
+        .container { max-width: 600px; margin: auto; padding: 2em; background: #fff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #5a5a5a; }
+        .option-group { margin-bottom: 1.5em; }
+        .option-item { margin-bottom: 1em; }
+        .option-item label { display: block; margin-bottom: 0.5em; font-weight: bold; }
+        .input-group { display: none; margin-top: 0.5em; padding: 10px; border-radius: 5px; background-color: #fafafa; }
+        .input-group.active { display: block; }
+        textarea { width: 97%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; min-height: 80px; }
+        .btn-container { text-align: center; margin-top: 2em; }
+        button { padding: 10px 20px; font-size: 1em; color: #fff; background-color: #007bff; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; }
+        button:hover { background-color: #0056b3; }
+        #response-area { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 8px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Générateur d'idées AI</h1>
+
+    <form id="idea-generator-form">
+        <div class="option-group">
+            <div class="option-item">
+                <input type="radio" id="personnage" name="option" value="personnage" checked>
+                <label for="personnage">Décrire un personnage</label>
+                <div class="input-group active" data-option="personnage">
+                    <textarea placeholder="Décrivez votre idée pour le personnage..."></textarea>
+                </div>
+            </div>
+            <div class="option-item">
+                <input type="radio" id="scene" name="option" value="scene">
+                <label for="scene">Décrire une scène</label>
+                <div class="input-group" data-option="scene">
+                    <textarea placeholder="Décrivez votre idée pour la scène..."></textarea>
+                </div>
+            </div>
+            <div class="option-item">
+                <input type="radio" id="scenario" name="option" value="scenario">
+                <label for="scenario">Décrire un scénario</label>
+                <div class="input-group" data-option="scenario">
+                    <textarea placeholder="Décrivez votre idée pour le scénario..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button type="submit">Générer</button>
+        </div>
+    </form>
+    
+    <div id="response-area">En attente de votre saisie...</div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

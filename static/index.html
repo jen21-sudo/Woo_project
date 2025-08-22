@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="appTitle">Design WOO</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Styles intégrés pour les conteneurs de jeux et apps */
+        .fullscreen-game-overlay, .app-frame-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .fullscreen-game-overlay iframe, .app-frame-overlay iframe {
+            width: 90vw;
+            height: 80vh;
+            border: 4px solid #ff5722;
+            border-radius: 12px;
+            background: white;
+        }
+
+        .close-game-btn, .close-app-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .games-container-fixed {
+            margin: 20px auto;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .game-btn, .app-buttons button {
+            padding: 12px;
+            font-size: 16px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .game-btn:hover, .app-buttons button:hover {
+            background: #e65100;
+            transform: scale(1.05);
+        }
+
+        .app-container {
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .app-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Overlay d'authentification -->
+    <div class="auth-overlay" id="auth-overlay">
+        <div class="auth-overlay-content">
+            <h1 data-i18n="welcomeTitle">Bienvenue sur WOO !</h1>
+            <p data-i18n="authText">Veuillez vous inscrire ou vous connecter pour continuer.</p>
+            <div class="auth-overlay-buttons">
+                <button type="button" class="start-button" id="register-btn-overlay"
+                    data-i18n="registerBtn">S'inscrire</button>
+                <button type="button" class="start-button" id="login-btn-overlay" data-i18n="loginBtn">Se
+                    connecter</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="fullscreen-container hidden">
+        <h1 data-i18n="fullscreenTitle">Bienvenue sur WOO !</h1>
+        <p data-i18n="fullscreenText">Cliquez pour une expérience immersive en plein écran.</p>
+        <button id="fullscreen-btn" data-i18n="fullscreenBtn">Lancer en plein écran</button>
+    </div>
+
+    <div id="main-page" class="page">
+        <div class="header">
+            <div class="logo">
+                <img src="woo logo blanc.png" alt="Logo Woo">
+            </div>
+            <div class="auth-buttons-container">
+                <button type="button" class="start-button" id="register-btn" data-i18n="registerBtn">S'inscrire</button>
+                <button type="button" class="start-button" id="login-btn" data-i18n="loginBtn">Se connecter</button>
+            </div>
+            <div class="avatar-container" id="user-avatar-container">
+                <img id="user-avatar" src="" alt="User Avatar">
+            </div>
+        </div>
+
+        <div class="floating-islands">
+            <div class="island island-1" data-target="chat-page-1">
+                <div class="character-container">
+                    <div class="character" style="background-image: url('Découverte.png');"></div>
+                    <div class="tooltip" data-i18n="wooSecretsTooltip">Woo Secrets</div>
+                </div>
+            </div>
+
+            <div class="island island-2" data-target="chat-page-2">
+                <div class="character-container">
+                    <div class="character" style="background-image: url('Art.png');"></div>
+                    <div class="tooltip" data-i18n="wooTubeTooltip">Woo Tube</div>
+                </div>
+            </div>
+
+            <div class="island island-3" data-target="chat-page-3">
+                <div class="character-container">
+                    <div class="character" style="background-image: url('Création.png');"></div>
+                    <div class="tooltip" data-i18n="wooCreatesTooltip">Woo Creates</div>
+                </div>
+            </div>
+
+            <div class="island island-4" data-target="chat-page-4">
+                <div class="character-container">
+                    <div class="character" style="background-image: url('musique.png'); width: 120%; height: 120%;">
+                    </div>
+                    <div class="tooltip" data-i18n="wooSongsTooltip">Woo Songs</div>
+                </div>
+            </div>
+
+            <div class="island island-5" data-target="chat-page-5">
+                <div class="character-container">
+                    <div class="character" style="background-image: url('Games.png');"></div>
+                    <div class="tooltip" data-i18n="wooGamesTooltip">Woo Games</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panneau de profil -->
+    <div id="profile-panel-overlay" class="profile-panel-overlay"></div>
+    <div id="profile-panel" class="profile-panel">
+        <div class="profile-panel-header">
+            <button class="profile-close-btn">&times;</button>
+        </div>
+        <div class="profile-info">
+            <div id="profile-avatar" class="profile-avatar-container" style="background-image: url('');">
+                <label for="photo-upload" class="profile-avatar-upload">
+                    <span data-i18n="changePhotoText">Changer de photo</span>
+                    <input type="file" id="photo-upload" accept="image/*" style="display: none;">
+                </label>
+            </div>
+            <h3 id="profile-name"></h3>
+            <p id="profile-email"></p>
+        </div>
+
+        <div class="profile-section" id="profile-section-edit">
+            <h4 data-i18n="editProfileTitle">Modifier le profil</h4>
+            <div class="profile-section-content">
+                <label for="edit-name" data-i18n="newNameLabel">Nouveau nom :</label>
+                <input type="text" id="edit-name" placeholder="Entrer un nouveau nom">
+                <br><br>
+                <button id="save-name-btn" class="profile-btn" data-i18n="saveNameBtn">Sauvegarder le nom</button>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h4 data-i18n="helpTitle">Aide et Support</h4>
+            <div class="profile-section-content">
+                <a href="#" id="contact-link" class="profile-link" data-i18n="contactLink">Contact us</a>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h4 data-i18n="languageTitle">Langue</h4>
+            <div class="profile-section-content">
+                <select id="language-select">
+                    <option value="fr" selected>Français</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h4 data-i18n="settingsTitle">Paramètres</h4>
+            <div class="profile-section-content">
+                <p data-i18n="settingsText">Gérer les paramètres du compte.</p>
+            </div>
+        </div>
+        <div class="profile-section">
+            <h4 data-i18n="privacyTitle">Confidentialité</h4>
+            <div class="profile-section-content">
+                <p data-i18n="privacyText">Consulter la politique de confidentialité.</p>
+            </div>
+        </div>
+        <div class="profile-section">
+            <h4 data-i18n="termsTitle">Règlements</h4>
+            <div class="profile-section-content">
+                <p data-i18n="termsText">Lire les termes et conditions.</p>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <button id="logout-btn" class="profile-btn logout-btn" data-i18n="logoutBtn">Déconnexion</button>
+        </div>
+    </div>
+
+    <!-- Page de chat : Woo Tube -->
+    <div id="chat-page-2" class="chat-page page" style="background-image: url('Rose.png');">
+        <div class="video-player-container" style="display: none;"></div>
+        <button class="back-button" data-i18n="backBtn">←</button>
+        <div class="category-buttons"></div>
+        <div class="video-results-container"></div>
+        <div class="conversation-and-character-container">
+            <div class="conversation-area"></div>
+            <div class="character-display">
+                <img src="Art.png" alt="Personnage Woo Tube" class="character-chat">
+            </div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="input-chat-2" data-i18n="inputPlaceholder" placeholder="Écris ton message ici...">
+            <button id="send-chat-2" data-i18n="sendBtn">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- Page de chat : Woo Secrets -->
+    <div id="chat-page-1" class="chat-page page" style="background-image: url('Vert.png');">
+        <button class="back-button" data-i18n="backBtn">←</button>
+        <div class="category-buttons"></div>
+        <div class="conversation-and-character-container">
+            <div id="boxes-screen">
+                <div class="container">
+                    <div class="box1" data-theme="Random Questions">❓</div>
+                    <div class="box2" data-theme="Magic Body">✨</div>
+                    <div class="box3" data-theme="Nature's Secrets">🌿</div>
+                    <div class="box4" data-theme="Techno Mysteries">🔬</div>
+                    <div class="box5" data-theme="Animal Adventures">🐾</div>
+                </div>
+            </div>
+
+            <div id="questions-section" style="display: none;">
+                <div class="section-header">
+                    <h2>✨ Choose a Question</h2>
+                    <button class="back-button" id="back-to-boxes">←</button>
+                </div>
+                <div id="questions-list"></div>
+            </div>
+
+            <div id="answer-section" style="display: none;">
+                <div class="section-header">
+                    <h2>💡 Answer</h2>
+                    <button class="back-button" id="back-to-questions">←</button>
+                </div>
+                <p id="chosen-question"></p>
+                <div id="answer-text"></div>
+            </div>
+            <div class="character-display">
+                <img src="Découverte.png" alt="Personnage Woo Secrets" class="character-chat">
+            </div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="input-chat-1" placeholder="Écris ton message ici...">
+            <button id="send-chat-1">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- Page de chat : Woo Creates -->
+    <div id="chat-page-3" class="chat-page page" style="background-image: url('Violet.png');">
+        <button class="back-button" data-i18n="backBtn">←</button>
+
+        <!-- Conteneur apps -->
+        <div class="app-container">
+            <h2 data-i18n="createWithApps">Crée avec des apps</h2>
+            <div class="app-buttons">
+                <button onclick="loadApp('woocreate/app1/index.html')">🎨 App 1</button>
+                <button onclick="loadApp('woocreate/Woostoryoff/front/index.html')">📐 App 2</button>
+                <button onclick="loadApp('woocreate/draw/index.html')">🎵 App 3</button>
+            </div>
+        </div>
+
+        <!-- Iframe plein écran pour apps -->
+        <div id="app-frame-container" class="app-frame-overlay">
+            <iframe id="app-frame" src="" frameborder="0"></iframe>
+            <button onclick="closeApp()" class="close-app-btn">❌ Fermer</button>
+        </div>
+
+        <!-- Personnage -->
+        <div class="character-display">
+            <img src="Création.png" alt="Personnage Woo Creates" class="character-chat">
+        </div>
+
+        <!-- Zone d'entrée (sans message AI) -->
+        <div class="input-area">
+            <input type="text" id="input-chat-3" placeholder="Écris ton message ici...">
+            <button id="send-chat-3">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- Chat Page 4 - WOO Music -->
+    <div id="chat-page-4" class="chat-page page" style="background-image: url('Bleue.png');"
+        data-categories='["Chansons", "Instruments", "Paroles", "Concerts", "Mélodies"]'>
+        <button class="back-button" data-i18n="backBtn">←</button>
+        <div class="category-buttons"></div>
+
+        <div class="music-section">
+            <h2 data-i18n="topHitsTitle">Hits du moment</h2>
+            <div class="music-cards-container" id="jamendo-results"></div>
+        </div>
+
+        <div class="music-section">
+            <div class="music-cards-container">
+                <div class="music-card generator-card"
+                    style="background-color: #ff5722; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <img src="https://via.placeholder.com/80x80.png?text=AI"
+                        style="width: 80px; height: 80px; margin-bottom: 10px;">
+                    <h3>Crée ta propre chanson !</h3>
+                    <p>Laisse-toi guider par l'IA</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="music-player-container" class="music-player-animated" style="display: none;">
+            <button id="close-player-btn" class="close-player-btn">❌</button>
+            <div class="player-content">
+                <img id="player-cover" class="player-cover"
+                    src="https://via.placeholder.com/200x200.png?text=Album+Cover" alt="Couverture">
+                <div class="player-info">
+                    <h3 id="player-title">Nom de la Chanson</h3>
+                    <p id="player-artist">Nom de l'Artiste</p>
+                </div>
+                <div class="music-progress">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <div class="player-controls">
+                    <button class="control-button">⏮️</button>
+                    <button id="play-pause-button" class="control-button">▶️</button>
+                    <button class="control-button">⏭️</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="conversation-and-character-container">
+            <div class="conversation-area"></div>
+            <div class="character-display">
+                <img src="musique.png" alt="Personnage Woo Songs" class="character-chat">
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="input-chat-4" placeholder="Écris ton message ici...">
+            <button id="send-chat-4">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- Modale de génération de chanson -->
+    <div id="generator-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Crée ta chanson avec l'IA</h2>
+            <button class="modal-close-btn">&times;</button>
+            <div class="modal-body">
+                <label for="song-prompt">Décris ta chanson (ex: une chanson joyeuse pour enfants sur les animaux)</label>
+                <textarea id="song-prompt" rows="4"
+                    placeholder="Ex: Une chanson en français, rythmée, sur les dinosaures..."></textarea>
+                <button id="generate-song-btn" class="start-button">Générer la chanson</button>
+                <div id="generated-song-output" class="generated-output" style="margin-top: 20px; display: none;">
+                    <h3>Chanson générée :</h3>
+                    <p id="song-lyrics"></p>
+                    <button id="play-generated-song-btn" class="start-button">🎧 Écouter (simulé)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page de chat : Woo Games -->
+    <div id="chat-page-5" class="chat-page page" style="background-image: url('Jaune.png');"
+        data-categories='["Aventures", "Stratégie", "Puzzle", "Courses", "Exploration"]'>
+        <button class="back-button">←</button>
+
+        <!-- Conteneur fixe des jeux -->
+        <div class="games-container-fixed">
+            <h2 data-i18n="availableGames">Jeux disponibles</h2>
+            <div id="games-list" class="games-grid">
+                <button class="game-btn" onclick="loadGame('woogame/jeu1/index.html')">🎮 Jeu 1</button>
+                <button class="game-btn" onclick="loadGame('woogame/jeu2/index.html')">🚀 Jeu 2</button>
+                <button class="game-btn" onclick="loadGame('woogame/jeu3/index.html')">⚡ Jeu 3</button>
+            </div>
+        </div>
+
+        <!-- Iframe plein écran pour jeux -->
+        <div id="game-container" class="fullscreen-game-overlay">
+            <iframe id="game-frame" src="" frameborder="0"></iframe>
+            <button onclick="closeGame()" class="close-game-btn">❌ Fermer</button>
+        </div>
+
+        <!-- Personnage -->
+        <div class="character-display">
+            <img src="Games.png" alt="Personnage Woo Games" class="character-chat">
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="input-chat-5" placeholder="Écris ton message ici...">
+            <button id="send-chat-5">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- API YouTube -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <!-- Script principal -->
+    <script src="script.js"></script>
+
+    <script>
+        // === Fonctions de chargement de jeux et apps ===
+        function loadGame(url) {
+            const container = document.getElementById("game-container");
+            const iframe = document.getElementById("game-frame");
+            iframe.src = url;
+            container.style.display = "flex";
+        }
+
+        function closeGame() {
+            const container = document.getElementById("game-container");
+            const iframe = document.getElementById("game-frame");
+            iframe.src = "";
+            container.style.display = "none";
+        }
+
+        function loadApp(url) {
+            const container = document.getElementById("app-frame-container");
+            const iframe = document.getElementById("app-frame");
+            iframe.src = url;
+            container.style.display = "flex";
+        }
+
+        function closeApp() {
+            const container = document.getElementById("app-frame-container");
+            const iframe = document.getElementById("app-frame");
+            iframe.src = "";
+            container.style.display = "none";
+        }
+
+        // === Logique de boîtes et questions (Woo Secrets) ===
+        const questionsSection = document.getElementById('questions-section');
+        const questionsList = document.getElementById('questions-list');
+        const answerSection = document.getElementById('answer-section');
+        const chosenQuestion = document.getElementById('chosen-question');
+        const answerText = document.getElementById('answer-text');
+        const backToBoxes = document.getElementById('back-to-boxes');
+        const backToQuestions = document.getElementById('back-to-questions');
+
+        const ws = new WebSocket("ws://localhost:5000/ws");
+
+        ws.onopen = () => console.log("Connecté au serveur WebSocket.");
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === "questions") {
+                questionsList.innerHTML = '';
+                data.questions.forEach(q => {
+                    const button = document.createElement('button');
+                    button.className = 'question-button';
+                    button.textContent = q;
+                    button.addEventListener('click', () => getAnswer(q));
+                    questionsList.appendChild(button);
+                });
+            } else if (data.type === "reponse") {
+                let cleanText = data.reponse
+                    .replace(/\*\*(.*?)\*\*/g, '$1')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^- /gm, '• ')
+                    .trim();
+                answerText.innerHTML = cleanText;
+            }
+        };
+
+        ws.onclose = () => console.log("Déconnecté du serveur WebSocket.");
+        ws.onerror = (error) => console.error("Erreur WebSocket:", error);
+
+        document.querySelectorAll('.box1, .box2, .box3, .box4, .box5').forEach(box => {
+            box.addEventListener('click', () => {
+                const theme = box.dataset.theme;
+                questionsSection.style.display = 'block';
+                answerSection.style.display = 'none';
+                questionsList.innerHTML = '🌀 Loading questions...';
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: "get_questions", theme }));
+                }
+            });
+        });
+
+        function getAnswer(question) {
+            chosenQuestion.textContent = question;
+            answerText.textContent = '🔍 Searching the magic answer...';
+            answerSection.style.display = 'block';
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "get_reponse", question }));
+            }
+        }
+
+        backToQuestions.addEventListener('click', () => {
+            answerSection.style.display = 'none';
+            questionsSection.style.display = 'block';
+        });
+
+        backToBoxes.addEventListener('click', () => {
+            questionsSection.style.display = 'none';
+        });
+
+        // === Gestion de la musique (Jamendo) ===
+        const JAMENDO_CLIENT_ID = '0f1a886e';
+        const resultsContainer = document.getElementById('jamendo-results');
+        const audio = new Audio();
+        document.body.appendChild(audio);
+
+        const playerContainer = document.getElementById('music-player-container');
+        const playerCover = document.getElementById('player-cover');
+        const playerTitle = document.getElementById('player-title');
+        const playerArtist = document.getElementById('player-artist');
+        const playPauseBtn = document.getElementById('play-pause-button');
+        const closePlayerBtn = document.getElementById('close-player-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const chatInput = document.getElementById('input-chat-4');
+        const sendBtn = document.getElementById('send-chat-4');
+
+        function appendMessageToChat(text, sender) {
+            const chatArea = document.querySelector('#chat-page-4 .conversation-area');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function displaySongs(tracks) {
+            resultsContainer.innerHTML = '';
+            tracks.forEach(track => {
+                const card = document.createElement('div');
+                card.className = 'music-card';
+                card.innerHTML = `
+                    <img src="${track.image || 'https://via.placeholder.com/180x180.png?text=No+Cover'}" alt="${track.name}">
+                    <div class="music-card-info">
+                        <h3>${track.name}</h3>
+                        <p>${track.artist_name || 'Artiste inconnu'}</p>
+                    </div>
+                `;
+                card.onclick = () => {
+                    playSong(track.audio, track.name, track.artist_name, track.image);
+                    appendMessageToChat(`Lecture de "${track.name}"`, 'ai');
+                };
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        function playSong(audioUrl, title, artist, coverUrl) {
+            audio.src = audioUrl;
+            audio.play().catch(e => console.error("Erreur lecture audio:", e));
+            playerCover.src = coverUrl || 'https://via.placeholder.com/200x200.png?text=Album+Cover';
+            playerTitle.textContent = title;
+            playerArtist.textContent = artist;
+            playerContainer.style.display = 'flex';
+            playPauseBtn.textContent = '⏸️';
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+        });
+
+        playPauseBtn?.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playPauseBtn.textContent = '⏸️';
+            } else {
+                audio.pause();
+                playPauseBtn.textContent = '▶️';
+            }
+        });
+
+        closePlayerBtn?.addEventListener('click', () => {
+            audio.pause();
+            audio.src = '';
+            playerContainer.style.display = 'none';
+            progressBar.style.width = '0%';
+        });
+
+        sendBtn?.addEventListener('click', () => {
+            const query = chatInput.value.trim();
+            if (query) {
+                appendMessageToChat(query, 'user');
+                chatInput.value = '';
+                searchSongsFromChat(query);
+            }
+        });
+
+        chatInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+
+        async function searchSongsFromChat(query) {
+            const q = query.trim();
+            if (!q) {
+                appendMessageToChat('Veuillez entrer un mot-clé (ex: comptines pour enfants).', 'ai');
+                return;
+            }
+
+            const url = `https://api.jamendo.com/v3.0/tracks/?client_id=${JAMENDO_CLIENT_ID}&namesearch=${encodeURIComponent(q)}&tags=children&limit=6&format=json`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (!data.results || data.results.length === 0) {
+                    appendMessageToChat('Aucune chanson trouvée. Essayez une autre recherche !', 'ai');
+                    return;
+                }
+                displaySongs(data.results);
+            } catch (error) {
+                console.error("Erreur Jamendo:", error);
+                appendMessageToChat("Désolé, une erreur est survenue.", 'ai');
+            }
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                searchSongsFromChat('kids songs');
+            }, 1000);
+        });
+
+        // === Générateur de chanson (modale) ===
+        const generatorModal = document.getElementById('generator-modal');
+        const modalCloseBtn = document.querySelector('#generator-modal .modal-close-btn');
+        const songPromptInput = document.getElementById('song-prompt');
+        const generateSongBtn = document.getElementById('generate-song-btn');
+        const generatedOutput = document.getElementById('generated-song-output');
+        const songLyrics = document.getElementById('song-lyrics');
+        const playGeneratedSongBtn = document.getElementById('play-generated-song-btn');
+
+        document.querySelector('.generator-card').addEventListener('click', () => {
+            generatorModal.style.display = 'flex';
+            songPromptInput.value = '';
+            generatedOutput.style.display = 'none';
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            generatorModal.style.display = 'none';
+        });
+
+        generatorModal.addEventListener('click', (e) => {
+            if (e.target === generatorModal) {
+                generatorModal.style.display = 'none';
+            }
+        });
+
+        generateSongBtn.addEventListener('click', async () => {
+            const prompt = songPromptInput.value.trim();
+            if (!prompt) {
+                alert("Veuillez décrire votre chanson !");
+                return;
+            }
+            songLyrics.textContent = "Génération en cours...";
+            generatedOutput.style.display = 'block';
+            generateSongBtn.disabled = true;
+
+            setTimeout(() => {
+                const fakeLyrics = `🎵 [Couplet 1]\nDans la jungle, vive les dinos,\nUn T-Rex danse sous les néons !\nIl fait "ROOOOAR" avec style,\nEt tout le monde l'applaudit !\n\n[Refrain]\nDino dino, saute et danse,\nMontre-nous ta révérence !\nAvec toi, c'est la fête,\nMême la lune te fait la fête ! 🎵`;
+                songLyrics.textContent = fakeLyrics;
+                generateSongBtn.disabled = false;
+            }, 2000);
+        });
+
+        playGeneratedSongBtn.addEventListener('click', () => {
+            appendMessageToChat("Ta chanson personnalisée est prête à être chantée ! 🎶", 'ai');
+            generatorModal.style.display = 'none';
+            document.getElementById('generator-message').style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>

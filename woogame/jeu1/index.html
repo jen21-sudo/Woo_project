@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Jeu des Mots Cachés - Woo Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Styles Généraux et Nouveau Background */
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-image: url('feu.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #4a4a4a;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.7); /* Transparence pour voir le fond */
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #333;
+            margin-bottom: 0.5em;
+        }
+
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .definition-box {
+            background-color: #f7f7f7;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+
+        .word-grid {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Pour les mots très longs */
+            margin-bottom: 20px;
+        }
+
+        .letter-box {
+            width: 45px;
+            height: 45px;
+            background-color: #d1d1d1;
+            color: #fff;
+            border-radius: 10px;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in, transform 0.3s ease-in;
+        }
+
+        .correct-letter {
+            background-color: #8c7b6c;
+            transform: scale(1.1);
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #answer-input {
+            width: 80%;
+            padding: 12px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            margin-bottom: 15px;
+            font-family: 'Quicksand', sans-serif;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        #answer-input:focus {
+            outline: none;
+            border-color: #8c7b6c;
+        }
+
+        #submit-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            background-color: #8c7b6c;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        #submit-btn:hover {
+            transform: translateY(-2px);
+            background-color: #a49182;
+        }
+
+        #status-message {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 25px;
+        }
+
+        .correct { color: #4CAF50; }
+        .incorrect { color: #f44336; }
+        .win { color: #2196F3; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Le Jeu des Mots Cachés</h1>
+        
+        <div class="game-header">
+            <div class="level-info">Niveau: <span id="level">1</span></div>
+            <div class="score-info">Score: <span id="score">0</span></div>
+        </div>
+
+        <div class="definition-box">
+            <p id="definition"></p>
+        </div>
+
+        <div class="word-grid" id="word-grid"></div>
+
+        <div class="input-area">
+            <input type="text" id="answer-input" placeholder="Ton mot...">
+            <button id="submit-btn">Valider</button>
+        </div>
+
+        <p id="status-message"></p>
+    </div>
+
+    <script>
+        const levels = [
+            { definition: "Je suis un fruit rond et rouge. On dit que je tiens le médecin éloigné.", word: "POMME" },
+            { definition: "Animal qui a une longue trompe et des grandes oreilles.", word: "ÉLÉPHANT" },
+            { definition: "Je sers à écrire, mais on me trouve aussi dans la mer.", word: "PLUME" },
+            { definition: "Je n'ai pas de bouche, mais je peux dire beaucoup de choses. Je n'ai pas de jambes, mais j'ai une page.", word: "LIVRE" },
+            { definition: "Avec mes rayons, je réchauffe la Terre. Je me lève le matin et me couche le soir.", word: "SOLEIL" },
+            { definition: "J'ai des feuilles sans arbres. Je suis une collection d'histoires et de contes.", word: "ALBUM" },
+            { definition: "Je suis un animal qui porte ma maison sur mon dos.", word: "ESCARGOT" },
+            { definition: "J'ai des dents mais je ne peux pas manger. Je peux te coiffer.", word: "PEIGNE" },
+            { definition: "Je suis un fruit tropical jaune et courbé.", word: "BANANE" },
+            { definition: "Je vole dans le ciel et je suis un oiseau de nuit. On dit que je suis sage.", word: "HIBOU" },
+            { definition: "Je suis un outil pour couper le bois, mais j'ai aussi un nom d'insecte.", word: "SCIE" },
+            { definition: "Je suis un animal domestique qui aime faire 'miaou'.", word: "CHAT" },
+            { definition: "Je suis un insecte qui fait du miel.", word: "ABEILLE" },
+            { definition: "Je peux être grande ou petite. On me souffle pour fêter un anniversaire.", word: "BOUGIE" },
+            { definition: "Je suis un objet qui donne l'heure et qui a des aiguilles.", word: "HORLOGE" },
+            { definition: "Je suis une petite chose de couleur verte, et je rends les gens joyeux à Noël.", word: "SAPIN" },
+            { definition: "Je peux tomber quand il fait chaud, mais je ne me blesse jamais. Je suis l'eau gelée.", word: "GLAÇON" },
+            { definition: "On me porte sur la tête et je protège du soleil.", word: "CHAPEAU" },
+            { definition: "Je suis un meuble où on peut s'asseoir et se reposer.", word: "FAUTEUIL" },
+            { definition: "Je suis un instrument de musique avec des cordes, mais on me tient debout.", word: "GUITARE" },
+            { definition: "Je suis un légume orangé, et les lapins m'adorent.", word: "CAROTTE" },
+            { definition: "Je suis un animal qui change de couleur pour se cacher.", word: "CAMÉLÉON" },
+            { definition: "J'ai un trou au milieu, mais je peux quand même t'aider à t'habiller.", word: "BOUTON" },
+            { definition: "Je suis un animal noir et blanc qui produit du lait.", word: "VACHE" },
+            { definition: "On me trouve au bout d'un crayon et je sers à corriger les erreurs.", word: "GOMME" },
+            { definition: "Je suis un grand fruit avec une peau verte et une chair rouge, pleine de pépins noirs. On me mange en été.", word: "PASTÈQUE" },
+            { definition: "Je suis un animal qui vit dans le désert et j'ai une ou deux bosses.", word: "CHAMEAU" },
+            { definition: "J'ai des ailes mais je ne suis pas un oiseau. Je peux être un papillon ou un insecte.", word: "INSECTE" },
+            { definition: "Je suis le petit d'une poule.", word: "POUSSIN" },
+            { definition: "Je suis un outil pour creuser la terre.", word: "PELLE" },
+            { definition: "Je suis un plat de pâtes en forme de tubes, souvent servi avec de la sauce.", word: "PENNE" },
+            { definition: "Je suis une chose que l'on voit au sol et qui peut être un chat ou un chien, ou un ami imaginaire", word: "OMBRE" },
+            { definition: "Je suis un petit animal, qui court très vite et aime manger des noisettes.", word: "ÉCUREUIL" },
+            { definition: "Je suis un gâteau rond et plat que l'on mange pour le petit-déjeuner. Je suis souvent accompagné de sirop d'érable.", word: "PANCAKE" },
+            { definition: "Je suis un pays en forme de botte.", word: "ITALIE" },
+            { definition: "Je suis un plat typique de la cuisine française, fait avec des œufs, du fromage et des lardons.", word: "QUICHE" },
+            { definition: "J'ai des feuilles, mais je ne suis pas un arbre. J'ai une couverture et je raconte des histoires.", word: "LIVRE" },
+            { definition: "Je suis un animal qui habite dans le désert, et qui a huit pattes et une toile.", word: "ARAIGNÉE" },
+            { definition: "Je suis une machine qui nous permet de nous déplacer, et qui roule sur des rails.", word: "TRAIN" },
+            { definition: "Je suis une matière liquide, transparente et incolore qui est essentielle à la vie.", word: "EAU" },
+            { definition: "Je suis un endroit où les enfants apprennent et jouent. Il y a des tableaux et des tables.", word: "ÉCOLE" },
+            { definition: "Je suis le contraire de la joie.", word: "TRISTESSE" },
+            { definition: "Je suis un animal de compagnie qui peut aboyer et qui aime jouer à la balle.", word: "CHIEN" },
+            { definition: "Je suis un vêtement que l'on met pour aller se baigner.", word: "MAILLOT" },
+            { definition: "Je suis un instrument de musique en bois qu'on joue en le grattant.", word: "GUITARE" },
+            { definition: "Je suis un objet qui sert à s'éclairer dans le noir.", word: "LAMPE" },
+            { definition: "Je suis un outil de jardinage qui sert à couper l'herbe.", word: "TONDEUSE" },
+            { definition: "Je suis un fruit rond et vert à l'intérieur, et on peut en faire une purée pour les bébés.", word: "AVOCAT" },
+            { definition: "Je suis une pâtisserie ronde et feuilletée que l'on mange souvent au petit-déjeuner.", word: "CROISSANT" },
+            { definition: "Je suis un objet qui sert à écrire, et qui contient une mine de carbone.", word: "CRAYON" },
+            { definition: "Je suis un animal qui vit dans l'eau, et qui peut sauter très haut.", word: "DAUPHIN" },
+            { definition: "Je suis une personne qui joue d'un instrument de musique.", word: "MUSICIEN" },
+            { definition: "Je suis le contraire de l'hiver.", word: "ÉTÉ" },
+            { definition: "Je suis un endroit où l'on va pour voir des films.", word: "CINÉMA" },
+            { definition: "Je suis un vêtement que l'on met quand il pleut.", word: "IMPERMÉABLE" },
+            { definition: "Je suis un animal qui fait des bonds et vit en Australie.", word: "KANGOUROU" },
+            { definition: "Je suis un jeu de société où il faut déplacer des pions sur un plateau en bois.", word: "ÉCHECS" },
+            { definition: "Je suis un fruit ovale et vert, et on peut en faire une limonade.", word: "CITRON" },
+            { definition: "Je suis un véhicule qui a quatre roues et qui nous permet de voyager.", word: "VOITURE" },
+            { definition: "Je suis un animal qui est le roi de la jungle.", word: "LION" },
+            { definition: "Je suis une boisson chaude que l'on prépare avec des feuilles et de l'eau.", word: "THÉ" },
+            { definition: "Je suis un animal qui vit en Afrique et qui a un long cou.", word: "GIRAFE" },
+            { definition: "Je suis un bâtiment où l'on peut acheter de la nourriture.", word: "SUPERMARCHÉ" },
+            { definition: "Je suis un dessert glacé qui se mange en été.", word: "GLACE" },
+            { definition: "Je suis un lieu où l'on peut voir des œuvres d'art.", word: "MUSÉE" },
+            { definition: "Je suis un animal qui est le meilleur ami de l'homme.", word: "CHIEN" },
+            { definition: "Je suis un petit fruit rouge et sucré qui pousse sur un arbre.", word: "CERISE" },
+            { definition: "Je suis un instrument de musique qui se joue avec un clavier et des touches blanches et noires.", word: "PIANO" },
+            { definition: "Je suis un animal de la ferme qui a des plumes et des ailes, mais qui ne vole pas.", word: "POULE" },
+            { definition: "Je suis un vêtement que l'on met pour se protéger du froid.", word: "MANTEAU" },
+            { definition: "Je suis un plat de riz cuit à l'eau, souvent accompagné de légumes ou de viande.", word: "RIZ" },
+            { definition: "Je suis un animal qui vit dans l'océan et qui a une coquille sur le dos.", word: "TORTUE" },
+            { definition: "Je suis un lieu où l'on peut acheter du pain et des gâteaux.", word: "BOULANGERIE" },
+            { definition: "Je suis un objet qui nous permet de voir dans le noir.", word: "TORCHE" },
+            { definition: "Je suis un sport qui se joue avec un ballon et deux équipes.", word: "FOOTBALL" },
+            { definition: "Je suis un animal qui a des rayures noires et blanches et qui vit en Afrique.", word: "ZÈBRE" },
+            { definition: "Je suis un fruit que l'on mange pour la Saint-Valentin.", word: "FRAISE" },
+            { definition: "Je suis un ustensile de cuisine qui sert à remuer les aliments.", word: "CUILLÈRE" },
+            { definition: "Je suis une grande étendue d'eau salée.", word: "OCÉAN" },
+            { definition: "Je suis un animal qui a des plumes de toutes les couleurs et qui peut parler.", word: "PERROQUET" },
+            { definition: "Je suis un objet qui nous permet de nous brosser les dents.", word: "BROSSE" },
+            { definition: "Je suis un animal qui vit dans les arbres et qui mange des bananes.", word: "SINGE" },
+            { definition: "Je suis un endroit où l'on va pour se soigner quand on est malade.", word: "HOPITAL" },
+            { definition: "Je suis un fruit jaune et sucré qui pousse sur un arbre.", word: "POIRE" },
+            { definition: "Je suis un vêtement que l'on met pour dormir.", word: "PYJAMA" },
+            { definition: "Je suis un animal qui a des bois et qui vit dans la forêt.", word: "CERF" },
+            { definition: "Je suis un objet que l'on utilise pour se laver le corps.", word: "SAVON" },
+            { definition: "Je suis un animal qui vit dans l'eau, qui a de grandes dents et qui est très dangereux.", word: "REQUIN" },
+            { definition: "Je suis un objet qui sert à faire de la musique, et qui a des touches blanches et noires.", word: "CLAVIER" },
+            { definition: "Je suis un fruit rouge qui pousse en été.", word: "TOMATE" },
+            { definition: "Je suis un animal qui vit dans les mers froides et qui a un gros bec.", word: "PINGOUIN" },
+            { definition: "Je suis un endroit où l'on va pour acheter des livres.", word: "LIBRAIRIE" },
+            { definition: "Je suis un objet qui nous permet de voir des choses qui sont loin.", word: "TÉLESCOPE" },
+            { definition: "Je suis un animal qui vit dans la mer et qui a une carapace.", word: "CRABE" },
+            { definition: "Je suis un plat que l'on prépare avec de la pâte et de la garniture.", word: "PIZZA" },
+            { definition: "Je suis un animal qui a des piquants et qui se roule en boule quand il a peur.", word: "HÉRISSON" },
+            { definition: "Je suis un endroit où l'on peut voir des animaux sauvages.", word: "ZOO" },
+            { definition: "Je suis un fruit qui est rond et qui a des graines à l'intérieur.", word: "RAISIN" },
+            { definition: "Je suis un ustensile de cuisine qui sert à couper les aliments.", word: "COUTEAU" },
+            { definition: "Je suis un animal qui vit dans les champs et qui peut voler.", word: "OISEAU" },
+            { definition: "Je suis un instrument de musique à cordes, qu'on joue en le frottant avec un archet.", word: "VIOLON" },
+            { definition: "Je suis un endroit où l'on va pour se reposer et se baigner.", word: "PLAGE" },
+            { definition: "Je suis un fruit qui est rond et sucré et qui a des pépins.", word: "MELON" },
+            { definition: "Je suis un objet qui nous permet de nous éclairer.", word: "LAMPE" },
+            { definition: "Je suis un animal qui a des grandes oreilles et qui vit dans les montagnes.", word: "LAPIN" },
+            { definition: "Je suis un endroit où l'on va pour acheter des médicaments.", word: "PHARMACIE" },
+            { definition: "Je suis un animal qui a des cornes et qui vit dans la savane.", word: "GAZELLE" },
+            { definition: "Je suis un objet qui nous permet de voyager dans le temps.", word: "HORLOGE" },
+            { definition: "Je suis un animal qui a un long cou et qui est un symbole de l'élégance.", word: "CYGNE" },
+            { definition: "Je suis un lieu où l'on va pour faire des sports.", word: "STADE" },
+            { definition: "Je suis un animal qui a une trompe et qui vit en Asie.", word: "ÉLÉPHANT" },
+            { definition: "Je suis un objet qui nous permet de communiquer avec d'autres personnes.", word: "TÉLÉPHONE" }
+        ];
+        
+
+        let currentLevelIndex = 0;
+        let score = 0;
+
+        const levelElement = document.getElementById("level");
+        const scoreElement = document.getElementById("score");
+        const definitionElement = document.getElementById("definition");
+        const wordGridElement = document.getElementById("word-grid");
+        const answerInputElement = document.getElementById("answer-input");
+        const submitBtn = document.getElementById("submit-btn");
+        const statusMessageElement = document.getElementById("status-message");
+
+        window.onload = startGame;
+
+        function startGame() {
+            currentLevelIndex = 0;
+            score = 0;
+            updateUI();
+            loadLevel();
+        }
+
+        function loadLevel() {
+            if (currentLevelIndex < levels.length) {
+                const currentLevel = levels[currentLevelIndex];
+                definitionElement.innerText = currentLevel.definition;
+                createWordBoxes(currentLevel.word.length);
+                answerInputElement.value = "";
+                statusMessageElement.innerText = "";
+            } else {
+                endGame();
+            }
+        }
+
+        function createWordBoxes(wordLength) {
+            wordGridElement.innerHTML = '';
+            for (let i = 0; i < wordLength; i++) {
+                const box = document.createElement("div");
+                box.classList.add("letter-box");
+                wordGridElement.appendChild(box);
+            }
+        }
+
+        function updateUI() {
+            levelElement.innerText = currentLevelIndex + 1;
+            scoreElement.innerText = score;
+        }
+
+        submitBtn.addEventListener("click", checkAnswer);
+        answerInputElement.addEventListener("keyup", (e) => {
+            if (e.key === "Enter") {
+                checkAnswer();
+            }
+        });
+
+        function checkAnswer() {
+            const userAnswer = answerInputElement.value.trim().toUpperCase();
+            const correctWord = levels[currentLevelIndex].word.toUpperCase();
+
+            if (userAnswer === correctWord) {
+                statusMessageElement.innerText = "Bravo ! C'est la bonne réponse !";
+                statusMessageElement.className = "correct";
+                score += 10;
+                displayCorrectWord(correctWord);
+                setTimeout(() => {
+                    currentLevelIndex++;
+                    updateUI();
+                    loadLevel();
+                }, 1500);
+            } else {
+                statusMessageElement.innerText = "Ce n'est pas le bon mot. Essaie encore !";
+                statusMessageElement.className = "incorrect";
+            }
+        }
+
+        function displayCorrectWord(word) {
+            const letterBoxes = document.querySelectorAll(".letter-box");
+            for (let i = 0; i < word.length; i++) {
+                letterBoxes[i].innerText = word[i];
+                letterBoxes[i].classList.add("correct-letter");
+            }
+        }
+
+        function endGame() {
+            statusMessageElement.innerText = "Félicitations ! Tu as terminé tous les niveaux !";
+            statusMessageElement.className = "win";
+            definitionElement.innerText = "Le jeu est terminé. Pour rejouer, rafraîchis la page.";
+            answerInputElement.style.display = 'none';
+            submitBtn.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

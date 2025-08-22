@@ -1,0 +1,193 @@
+/* Reset basique */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* Variables pour les couleurs */
+:root {
+    --primary-color: #4CAF50; /* Vert pour les blocs */
+    --secondary-color: #FFC107; /* Jaune pour le bouton */
+    --background-light: #f4f4f4;
+    --background-dark: #222;
+    --text-color: #333;
+    --character-color: #4CAF50;
+    --game-area-bg: #000; /* Le grand carré noir */
+    --code-area-bg: #fff;
+}
+
+/* Styles généraux */
+body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--background-light);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+}
+
+header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Section de l'éditeur de code */
+.code-editor-section {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+/* Palette des blocs */
+.bloc-palette {
+    width: 180px;
+    background-color: var(--background-dark);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bloc-palette h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+/* Style des blocs */
+.bloc {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px;
+    margin: 8px 0;
+    width: 100%;
+    border-radius: 8px;
+    text-align: center;
+    cursor: grab;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-weight: bold;
+}
+
+.bloc:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.bloc:active {
+    cursor: grabbing;
+}
+
+.bloc.highlight {
+    box-shadow: 0 0 0 4px var(--secondary-color);
+}
+
+/* Zones principales (aire de jeu et de code) */
+.main-code-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Aire de jeu (grand carré noir) */
+#game-area {
+    width: 400px;
+    height: 400px;
+    background-color: var(--game-area-bg);
+    border: 2px solid var(--text-color);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Le personnage */
+#character {
+    width: 40px;
+    height: 40px;
+    background-color: var(--character-color);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transform-origin: center center;
+    transition: transform 0.5s ease-out; /* Ajoute une transition pour le mouvement */
+}
+
+/* Aire de code (grande barre blanche) */
+#code-area {
+    width: 400px;
+    min-height: 100px;
+    background-color: var(--code-area-bg);
+    border: 2px solid var(--text-color);
+    border-top: none; /* Pour un effet de "continuité" visuelle */
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.instruction {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+}
+
+.code-area-filled .instruction {
+    display: none;
+}
+
+/* Section des contrôles */
+.controls-section {
+    margin-top: 20px;
+}
+
+#run-btn {
+    background-color: var(--secondary-color);
+    color: var(--background-dark);
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#run-btn:hover {
+    background-color: #f1b900;
+    transform: translateY(-2px);
+}
+
+/* Pied de page */
+footer {
+    margin-top: 40px;
+    color: #777;
+    font-size: 0.8rem;
+}
+/* ... (le reste du CSS est identique) ... */
+
+#formula-display {
+    background-color: #e0e0e0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+#formula-text {
+    color: var(--primary-color);
+}

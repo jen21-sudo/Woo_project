@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Story Creator for Kids</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Neue', cursive;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+
+      /* ✅ ICI : CHANGEZ "fond.jpg" PAR LE NOM DE VOTRE IMAGE */
+      background: url('Rose.png') center/cover no-repeat;
+    }
+
+    /* Pour que le fond soit derrière tout, avec transparence douce */
+    .overlay {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Voile blanc léger pour améliorer la lisibilité */
+
+    }
+
+    /* === ÉCRAN DE DÉMARRAGE === */
+    .start-screen {
+      text-align: center;
+      width: 100%;
+      padding: 20px;}
+
+      
+    .overlay {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+    .instruction {
+      font-family: 'Fredoka One', cursive;
+      font-size: 28px;
+      color: #fff;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px 30px;
+      border-radius: 50px;
+      margin-bottom: 40px;
+    }
+
+    .books-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 30px;
+      width: 60%;
+      max-width: 500px;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+    }
+
+    .book-item {
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+      overflow: hidden;
+    }
+
+    .book-item:hover {
+      transform: scale(1.08);
+    }
+
+    .book-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* === INTERFACES (semi-transparentes) === */
+    .main-container, .ia-container {
+      display: none;
+      width: 85%;
+      max-width: 900px;
+      height: 75vh;
+      border-radius: 30px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: fadeIn 0.7s ease;
+      flex-direction: column;
+      /* Fond léger pour voir le background derrière */
+      background: rgba(255, 255, 240, 0.95);
+      
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header-main {
+      background: #ff9ff3;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 28px;
+      border-bottom: 4px dashed #feca57;
+    }
+
+    .content-main {
+      padding: 30px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group label {
+      font-size: 20px;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      border: 3px dashed #f39c12;
+      border-radius: 15px;
+      outline: none;
+      background: white;
+      resize: none;
+      font-family: 'Comic Neue', cursive;
+    }
+
+    .btn {
+      background: #f39c12;
+      color: white;
+      border: none;
+      padding: 16px 30px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 15px rgba(243, 156, 18, 0.3);
+      transition: all 0.3s ease;
+      align-self: center;
+    }
+
+    .btn:hover {
+      background: #e67e22;
+      transform: translateY(-3px);
+    }
+
+    .footer-main {
+      background: rgba(222, 230, 233, 0.8);
+      padding: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: #636e72;
+    }
+
+    /* === IA INTERFACE === */
+    .ia-container {
+      background: rgba(240, 255, 244, 0.95);
+    }
+
+    .header-ia {
+      background: #2e86de;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 28px;
+    }
+
+    .content-ia {
+      padding: 30px;
+      flex: 1;
+      color: #2c3e50;
+      line-height: 1.8;
+      font-size: 18px;
+      overflow-y: auto;
+    }
+
+    .footer-ia {
+      background: rgba(222, 230, 233, 0.8);
+      padding: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: #636e72;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay pour lisibilité -->
+  <div class="overlay">
+
+    <!-- Écran de démarrage -->
+    <div class="start-screen" id="startScreen">
+      <div class="instruction">Choose a Magic Book to Begin!</div>
+      <div class="books-grid">
+        <img src="book1.png" class="book-item" alt="Book 1" />
+        <img src="book2.png" class="book-item" alt="Book 2" />
+        <img src="book3.png" class="book-item" alt="Book 3" />
+        <img src="book4.png" class="book-item" alt="Book 4" />
+      </div>
+    </div>
+
+    <!-- Interface principale -->
+    <div class="main-container" id="mainContainer">
+      <div class="header-main">📖 Tell Your Story, Little Author!</div>
+      <div class="content-main">
+        <div class="form-group">
+          <label>✨ Your Character</label>
+          <input type="text" placeholder="Example: Lily the brave" id="charInput" />
+        </div>
+        <div class="form-group">
+          <label>🏰 The Scene</label>
+          <textarea id="sceneInput" placeholder="A castle in the clouds..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>📖 Write Your Story!</label>
+          <textarea id="storyInput" placeholder="One day, Lily found a golden key..."></textarea>
+        </div>
+        <button class="btn" onclick="generateStory()">Generate Story 🎉</button>
+      </div>
+      <div class="footer-main">© 2025 Kids Story Creator</div>
+    </div>
+
+    <!-- Interface IA -->
+    <div class="ia-container" id="iaContainer">
+      <div class="header-ia">🧠 Your Magical Story</div>
+      <div class="content-ia" id="iaContent">
+        <p>Your story will appear here!</p>
+      </div>
+      <div class="footer-ia">© AI Storyteller</div>
+    </div>
+
+  </div>
+
+    <script src="woostory.js"></script>
+
+</body>
+</html>
